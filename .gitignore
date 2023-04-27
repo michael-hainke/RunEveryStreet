@@ -1,2 +1,11 @@
 *.yml
 .httr-oauth
+Archive/df_progress_new.rds
+Archive/osm_update.R
+Archive/run_every_street.R
+Archive/run_every_street2.R
+Archive/run_every_street3.R
+Archive/run_every_street_add_activity.R
+Archive/run_every_street_progress.R
+Archive/strava_activity_detail_raw_old.rds
+Archive/strava_activity_detail_snap_old.rds
