@@ -28,15 +28,6 @@ df_streets <- df_streets %>% filter(!(city == 'West Vancouver' & osm_id %in% dup
 # extract all the lat/lon coordinates
 df_coords <- extract_coordinates(df_streets)
 
-# # calculate Haversine distance between coordinates
-# df_coords <- calc_distance(df_coords)
-# 
-# # add street lengths
-# df_streets <- street_length(df_streets, df_coords)
-#   
-# # encode polylines
-# df_streets <- get_polylines(df_streets, df_coords)
-
 # save files
 saveRDS(df_streets,"Data/df_osm_street_summary_raw.rds")
 saveRDS(df_coords,"Data/df_osm_street_coords_raw.rds")

@@ -9,3 +9,16 @@ Archive/run_every_street_add_activity.R
 Archive/run_every_street_progress.R
 Archive/strava_activity_detail_raw_old.rds
 Archive/strava_activity_detail_snap_old.rds
+Archive/2-get_strava_activities.R
+Archive/2023-04-28_df_progress.rds
+Archive/3-update_run_every_street_progress.R
+Archive/df_progress_archive.rds
+Archive/strava_activity_detail_raw.rds
+Archive/strava_activity_detail_snap.rds
+Outputs/2023-05-26_activity_summary.xlsx
+Outputs/2023-05-26_snapped_activity.png
+Outputs/~$2023-05-26_activity_summary.xlsx
+Outputs/map.html
+Outputs/map.html
+Outputs/manual_completions.html
+.Rhistory

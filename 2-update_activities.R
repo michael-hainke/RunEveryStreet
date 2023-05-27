@@ -316,7 +316,7 @@ saveWidget(map, file = "Outputs/map.html")
 webshot2::webshot("Outputs/map.html", vwidth = 1920, vheight = 1080, paste0("Outputs/",Sys.Date(),"_osm_streets.png"))
 
 # Map Completed Streets
-if (!exists("df_strts_map")) { df_streets <- readRDS("Data/Completed_Streetd.rds") }
+if (!exists("df_strts_map")) { df_streets <- readRDS("Data/Completed_Streets.rds") }
 map <- map_activities(df_strts_map, 'polyline', 'name', google$api_key)
 saveWidget(map, file = "Outputs/map.html")
 webshot2::webshot("Outputs/map.html", vwidth = 1920, vheight = 1080, paste0("Outputs/",Sys.Date(),"_completed_streets.png"))
