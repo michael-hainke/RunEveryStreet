@@ -1,8 +1,9 @@
 # RunEveryStreet
 Objective: To track progress of goal to run every street in North Vancouver and West Vancouver in 2023.
 
-Use Open Street Map (OSM) data to measure progress from all run activities tracked in Strava.  This code is still a work in progress, but the basic structure is as follows: <br>
+Use Open Street Map (OSM) data to measure progress from all run activities tracked in Strava.  Basic structure is as follows: <br>
 0 - Create a file to store all the common functions required across all remaining files <br>
-1 - Using OSM API query all streets and coordinate data, manually curate to define complete list and data for all roads in North and West Van <br>
-2 - Using Strava API query all activities and coordinate data <br>
-3 - Combine the OSM and Strava data to summarize the current progress <br>
+1 - Use OSM data to generate map of all roads in North Van and West Van <br>
+<tab> Get all street data from a bounding box around North Vancouver and West Vancouver.  Remove any duplicates from overlap.  Then I did some manual curation to remove most unnamed streets, freeways, alleys, private roads etc.  Also added a few custom created roads where there were gaps.  Save final file as df_progress, which will become the file that all activities are matched against to measure progress
+2 - Using Strava API get new activities, add to progress file and summarise prograss so far <br>
+<tab> Get all new Strava activity data since last update.  If added to progress file then get raw stream coordinate data, as well as use the Google 'snap to road' API to snap all coordinate to nearest road to help with matching against OSM road nodes.  Also update the activity summary file which has summary data about each activity including a Google route polyline.  Just for fun I am also tracking the total number of basketball hoops and red Muskoka (Adirondack) chairs that I spot on my runs.  Then the script is matching all new activity coordinates to the nearest OSM street node and if within my set threshold (10m) then that node is marked as complete.  I output all nodes around current run to a Google map, which I review to manually update any nodes where were not marked as complete (just outside of 10m or an error in the activity tracking).  Those manual updates are saved to a .csv and then the script adds them to the progress file.  Finally, I generate an Excel file with a summary of progress to date, as well as last activity and last week.  There is a also a list of completed roads.  There are also some mapping functions to map the raw activity data, the 'snapped' activity data, and also a map of completed streets from the OSM data.
