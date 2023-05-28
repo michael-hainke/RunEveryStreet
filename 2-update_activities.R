@@ -218,77 +218,75 @@ for (activity in length(new_activities$activity):1) {
     writeData(wb, sheet, x = df_strt_summary, startCol = 9, startRow = 2)
     
     saveWorkbook(wb, file = paste0("Outputs/",Sys.Date(),"_activity_summary.xlsx"), overwrite = TRUE)
+
+    ###############################################
+    ### Polyline Data for all Completed Streets ###
+    ###############################################
+    
+    # Load OSM street data
+    df_streets <- readRDS("Data/df_osm_street_summary_final.rds") %>% select(osm_id,polyline)
+    
+    # Filter completed street segments
+    df_strt_seg_complete <- df_progress %>%
+                            group_by(osm_id,name,city) %>%
+                            summarise(complete = sum(complete),
+                                      total = n(),
+                                      length = sum(dist)) %>%
+                            filter(complete == total) %>%
+                            left_join(df_streets, by="osm_id") %>%
+                            ungroup()
+    
+    # Filter partially completed streets
+    id_count = 1
+    df_strt_partial <- df_progress %>%
+                       filter(!osm_id %in% df_strt_seg_complete$osm_id,
+                               complete == 1) %>%
+                       arrange(osm_id,id) %>%
+                       mutate(id_partial = case_when(row_number() == 1 ~ paste0(osm_id,"-",id_count),
+                                                      TRUE ~ ''))
+    
+    # Loop through all nodes and create a unique id_partial for each segment (osm_id - id_count)
+    # Increment id_count if:
+    #  1) First node in for next street in dataframe OR
+    #  2) Next street OR
+    #  3) Gap in current street (ie not the next node)
+    for (i in 2:length(df_strt_partial$osm_id)) {
+      if(df_strt_partial$id[i] == 1 ||
+         df_strt_partial$osm_id[i] != df_strt_partial$osm_id[i-1] ||
+         (df_strt_partial$id[i] - df_strt_partial$id[i-1] > 1 & df_strt_partial$osm_id[i] == df_strt_partial$osm_id[i-1])) { id_count = id_count + 1 }
+      df_strt_partial$id_partial[i] = paste0(df_strt_partial$osm_id[i],"-",id_count)
+    }
+    
+    # Identify all the single node segments and remove from partial street list
+    single_pts <- df_strt_partial %>%
+                  group_by(id_partial) %>%
+                  tally() %>% 
+                  filter(n == 1) %>%
+                  pull(id_partial)
+    df_strt_partial <- df_strt_partial %>% filter(!id_partial %in% single_pts)
+    
+    # Summarize partial streets and encode polylines
+    df_strt_partial_list <- df_strt_partial %>%
+                            group_by(id_partial, name) %>%
+                            summarise(pts = n()) %>%
+                            mutate(polyline = '') %>%
+                            ungroup()
+    
+    for (i in 1:length(df_strt_partial_list$id_partial)) {
+      print(paste0(i,": ",df_strt_partial_list$name[i]))
+      tmp <- df_strt_partial %>% filter(id_partial == df_strt_partial_list$id_partial[i])
+      polyline <- encode_pl(lat=tmp$lat, lon=tmp$lon)
+      df_strt_partial_list$polyline[i] <- polyline
+    }
+    
+    # combine full and partial streets into single dataframe for mapping and save
+    df_strts_map <- rbind(df_strt_seg_complete %>% select(name,polyline),
+                          df_strt_partial_list %>% select(name,polyline))
+    saveRDS(df_strts_map,"Data/df_completed_streets.rds")
     
   }
 }
 
-#############################
-### Map Completed Streets ###
-#############################
-
-# load data
-
-if (!exists("df_progress")) { df_progress <- readRDS("Data/df_progress.rds")}
-
-df_streets <- readRDS("Data/df_osm_street_summary_final.rds") %>% select(osm_id,polyline)
-
-# Filter completed street segments
-df_strt_seg_complete <- df_progress %>%
-                        group_by(osm_id,name,city) %>%
-                        summarise(complete = sum(complete),
-                                  total = n(),
-                                  length = sum(dist)) %>%
-                        filter(complete == total) %>%
-                        left_join(df_streets, by="osm_id") %>%
-                        ungroup()
-
-# Filter partially completed streets
-id_count = 1
-df_strt_partial <- df_progress %>%
-                   filter(!osm_id %in% df_strt_seg_complete$osm_id,
-                          complete == 1) %>%
-                   arrange(osm_id,id) %>%
-                   mutate(id_partial = case_when(row_number() == 1 ~ paste0(osm_id,"-",id_count),
-                                                 TRUE ~ ''))
-
-# Loop through all nodes and create a unique id_partial for each segment (osm_id - id_count)
-# Increment id_count if:
-#  1) First node in for next street in dataframe OR
-#  2) Next street OR
-#  3) Gap in current street (ie not the next node)
-for (i in 2:length(df_strt_partial$osm_id)) {
-  if(df_strt_partial$id[i] == 1 ||
-     df_strt_partial$osm_id[i] != df_strt_partial$osm_id[i-1] ||
-     (df_strt_partial$id[i] - df_strt_partial$id[i-1] > 1 & df_strt_partial$osm_id[i] == df_strt_partial$osm_id[i-1])) { id_count = id_count + 1 }
-  df_strt_partial$id_partial[i] = paste0(df_strt_partial$osm_id[i],"-",id_count)
-}
-
-# Identify all the single node segments and remove from partial street list
-single_pts <- df_strt_partial %>%
-              group_by(id_partial) %>%
-              tally() %>% 
-              filter(n == 1) %>%
-              pull(id_partial)
-df_strt_partial <- df_strt_partial %>% filter(!id_partial %in% single_pts)
-
-# Summarize partial streets and encode polylines
-df_strt_partial_list <- df_strt_partial %>%
-                        group_by(id_partial, name) %>%
-                        summarise(pts = n()) %>%
-                        mutate(polyline = '') %>%
-                        ungroup()
-
-for (i in 1:length(df_strt_partial_list$id_partial)) {
-  print(paste0(i,": ",df_strt_partial_list$name[i]))
-  tmp <- df_strt_partial %>% filter(id_partial == df_strt_partial_list$id_partial[i])
-  polyline <- encode_pl(lat=tmp$lat, lon=tmp$lon)
-  df_strt_partial_list$polyline[i] <- polyline
-}
-
-# combine full and partial streets into single dataframe for mapping
-df_strts_map <- rbind(df_strt_seg_complete %>% select(name,polyline),
-                      df_strt_partial_list %>% select(name,polyline))
-saveRDS(df_strts_map,"Data/Completed_Streetds.rds")
 
 ##################################
 ### Map Completed Activities ###
@@ -311,16 +309,27 @@ webshot2::webshot("Outputs/map.html", vwidth = 1920, vheight = 1080, paste0("Out
 
 # Map OSM Street Data
 if (!exists("df_streets")) { df_streets <- readRDS("Data/df_osm_street_summary_final.rds") }
-map <- map_activities(df_streets, 'polyline', 'name', google$api_key)
+map <- map_activities(df_streets, 'polyline', 'osm_id', google$api_key)
 saveWidget(map, file = "Outputs/map.html")
 webshot2::webshot("Outputs/map.html", vwidth = 1920, vheight = 1080, paste0("Outputs/",Sys.Date(),"_osm_streets.png"))
 
 # Map Completed Streets
-if (!exists("df_strts_map")) { df_streets <- readRDS("Data/Completed_Streets.rds") }
+if (!exists("df_strts_map")) { df_streets <- readRDS("Data/df_completed_streets.rds") }
 map <- map_activities(df_strts_map, 'polyline', 'name', google$api_key)
 saveWidget(map, file = "Outputs/map.html")
 webshot2::webshot("Outputs/map.html", vwidth = 1920, vheight = 1080, paste0("Outputs/",Sys.Date(),"_completed_streets.png"))
 
+# Map Nodes
+if (!exists("df_progress")) { df_streets <- readRDS("Data/df_progress.rds") }
+
+tmp <- df_progress %>% 
+       filter(osm_id=='508134094') %>%
+       mutate(colour = case_when(complete == 1 ~ 'green',
+                                 TRUE ~ 'red'),
+              info = paste0("osm_id: ",osm_id," id: ",id," distance: ",round(distance,2)))
+
+google_map(key = google$api_key, data = tmp) %>%
+  add_markers(lat = 'lat', lon = 'lon', colour = 'colour', info_window = "info")      
 
 
 
