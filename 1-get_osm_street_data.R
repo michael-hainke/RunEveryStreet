@@ -103,7 +103,7 @@ df_streets <- df_streets %>% filter(!osm_id %in% df_remove_streets$osm_id)
 
 # Load existing coordinate file if available and identify new streets that need coordinates
 if (file.exists("Data/df_progress.rds")) {
-  df_progress <- readRDS("Data/df_progress.rds")
+  df_progress <- readRDS("Data/df_progress.rds") %>% filter(!osm_id %in% df_remove_streets$osm_id)
   df_new_streets <- df_streets %>% filter(!osm_id %in% df_progress$osm_id)
 } else {
   df_progress <- NULL

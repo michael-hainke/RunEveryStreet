@@ -3,9 +3,10 @@ library(googleway)   # Google API functions
 library(tidyverse)   # data manipulation
 library(rStrava)     # Strava API functions
 library(httr)        # make API requests
-library(openxlsx)   # Excel files
+library(openxlsx)    # Excel files
 library(htmlwidgets) # Save maps
 library(readxl)      # Read Excel Files
+library(geosphere)   # Calc distances
 
 # Set directory
 setwd("~/GitHub/RunEveryStreet")

@@ -1,14 +1,12 @@
 # RunEveryStreet
 
-Some R code to track progress in running every street in North and West Vancouver.  Can be customized to any area.  Uses Open Street Map (OSM) data to map all streets within area and user's Strava activity data to measure progress.  Produces summary files in Excel and maps using Google Maps.
+This is the R code to track progress in running every street in North and West Vancouver, BC, Canada.  It can be customized to track progress in any city or area.  Uses Open Street Map (OSM) data to map all streets within area and user's Strava activity data to measure progress.  Produces summary files in Excel and maps using Google Maps.  Code is divided into 3 files:
 
 ## Table of Contents
 
-[Define Common Functions](#Define-Common-functions)  
-[Get OSM Street Data](#Get-Open-Street-Map-(OSM)-Street-Data)  
-[Update Progress](#Update-Progress)  
-[Remove and Add Streets](#Remove-And-Add-Streets)  
-[Map Activities](#Map-Activities)
+[1 - Get OSM Street Data](#Get-Open-Street-Map-(OSM)-Street-Data)  
+[2 - Update Progress](#Update-Progress)  
+[3 - Map Activities](#Map-Activities)
 
 ### Define Common Functions  
 0-run_every_street_functions.R  
